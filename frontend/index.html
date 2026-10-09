@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Sistema de gestión académica" />
+  <title>Sistema Académico</title>
+  <link rel="stylesheet" href="/styles.css?v=5" />
+</head>
+<body>
+  <section id="vista-login" class="vista vista-login">
+    <div class="login-shell">
+      <div class="login-brand">
+        <div class="brand-mark">SA</div>
+        <div>
+          <p class="eyebrow">GESTIÓN ACADÉMICA</p>
+          <h1>Sistema Académico</h1>
+          <p>Administra estudiantes, docentes, asignaturas, secciones, matrículas y calificaciones desde un solo lugar.</p>
+        </div>
+      </div>
+      <div class="tarjeta-login">
+        <p class="eyebrow">ACCESO</p>
+        <h2>Iniciar sesión</h2>
+        <p class="subtitulo">Usa uno de los usuarios de prueba para entrar.</p>
+        <form id="formulario-login" class="stack-form">
+          <div class="campo">
+            <label for="campo-usuario">Usuario</label>
+            <input id="campo-usuario" type="text" autocomplete="username" placeholder="admin" required />
+          </div>
+          <div class="campo">
+            <label for="campo-clave">Contraseña</label>
+            <input id="campo-clave" type="password" autocomplete="current-password" placeholder="••••••••" required />
+          </div>
+          <button type="submit" id="boton-entrar" class="boton boton-principal boton-grande">Entrar al sistema</button>
+        </form>
+        <p id="mensaje-login" class="mensaje" aria-live="polite"></p>
+        <div class="login-hint">
+          <span>Prueba rápida</span>
+          <code>admin / admin123</code>
+          <code>docente / docente123</code>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="vista-dashboard" class="vista vista-dashboard oculto">
+    <aside class="barra-lateral">
+      <div class="marca-lateral">
+        <div class="brand-mark small">SA</div>
+        <div>
+          <strong>Sistema Académico</strong>
+          <span>Panel de gestión</span>
+        </div>
+      </div>
+
+      <div class="navegacion">
+        <button class="nav-item activo" data-vista="inicio">⌂ <span>Inicio</span></button>
+        <p class="nav-titulo">Catálogos</p>
+        <button class="nav-item" data-vista="carreras">▤ <span>Carreras</span></button>
+        <button class="nav-item" data-vista="estudiantes">👨‍🎓 <span>Estudiantes</span></button>
+        <button class="nav-item" data-vista="docentes">👨‍🏫 <span>Docentes</span></button>
+        <button class="nav-item" data-vista="asignaturas">▦ <span>Asignaturas</span></button>
+        <button class="nav-item" data-vista="periodos">◷ <span>Periodos</span></button>
+        <button class="nav-item" data-vista="aulas">⌂ <span>Aulas</span></button>
+        <button class="nav-item" data-vista="secciones">☷ <span>Secciones</span></button>
+        <p class="nav-titulo">Académico</p>
+        <button class="nav-item" data-vista="matriculas">▣ <span>Matrículas</span></button>
+        <button class="nav-item" data-vista="calificaciones">✓ <span>Calificaciones</span></button>
+        <p class="nav-titulo">Sistema</p>
+        <button class="nav-item" data-vista="usuarios">◉ <span>Usuario y rol</span></button>
+      </div>
+
+      <div class="barra-lateral-pie">
+        <div class="usuario-mini">
+          <div class="avatar" id="avatar-usuario">A</div>
+          <div class="usuario-mini-datos">
+            <strong id="nombre-usuario-lateral">Administrador</strong>
+            <span id="rol-usuario-lateral">ADMIN</span>
+          </div>
+        </div>
+        <button id="boton-salir" class="boton boton-salir">↪ Cerrar sesión</button>
+      </div>
+    </aside>
+
+    <div class="area-principal">
+      <header class="barra-superior">
+        <div>
+          <p class="eyebrow" id="migas-pan">INICIO</p>
+          <h1 id="titulo-vista">Resumen general</h1>
+        </div>
+        <div class="acciones-barra">
+          <span id="chip-usuario" class="chip-usuario"></span>
+          <button id="boton-tema" class="boton boton-secundario" title="Cambiar tema">☼</button>
+                  </div>
+      </header>
+
+      <main class="contenido">
+        <section id="vista-inicio" class="modulo visible">
+          <div class="encabezado-modulo hero">
+            <div>
+              <p class="eyebrow">PANEL GENERAL</p>
+              <h2>Hola, <span id="titulo-bienvenida">Administrador</span></h2>
+              <p>Consulta el estado del sistema y accede rápidamente a los módulos.</p>
+            </div>
+            <div class="hero-indicator">
+              <span class="dot ok"></span>
+              <span>API conectada</span>
+            </div>
+          </div>
+          <section class="fila-tarjetas" id="fila-tarjetas"></section>
+          <div class="inicio-grid">
+            <section class="tarjeta panel-accesos">
+              <div class="encabezado-tarjeta">
+                <div>
+                  <p class="eyebrow">ACCESOS RÁPIDOS</p>
+                  <h3>¿Qué quieres hacer?</h3>
+                </div>
+              </div>
+              <div class="accesos-grid">
+                <button class="acceso-card" data-vista="estudiantes"><span>👨‍🎓</span><strong>Gestionar estudiantes</strong><small>Crear, editar e historial</small></button>
+                <button class="acceso-card" data-vista="docentes"><span>👨‍🏫</span><strong>Gestionar docentes</strong><small>Datos, estados y carga</small></button>
+                <button class="acceso-card" data-vista="secciones"><span>☷</span><strong>Crear sección</strong><small>Asignatura, docente y aula</small></button>
+                <button class="acceso-card" data-vista="matriculas"><span>▣</span><strong>Nueva matrícula</strong><small>Inscribir un estudiante</small></button>
+                <button class="acceso-card" data-vista="calificaciones"><span>✓</span><strong>Registrar calificaciones</strong><small>Parciales y nota final</small></button>
+              </div>
+            </section>
+            <section class="tarjeta panel-info">
+              <div class="encabezado-tarjeta">
+                <div>
+                  <p class="eyebrow">UML</p>
+                  <h3>Módulos del sistema</h3>
+                </div>
+              </div>
+              <div class="uml-chips">
+                <span>Carrera</span><span>Estudiante</span><span>EstadoEstudiante</span><span>Docente</span><span>EstadoDocente</span><span>Asignatura</span><span>Periodo</span><span>Aula</span><span>Sección</span><span>EstadoSección</span><span>Matrícula</span><span>EstadoMatrícula</span><span>Calificación</span><span>Usuario</span><span>Rol</span>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section id="vista-carreras" class="modulo"></section>
+        <section id="vista-estudiantes" class="modulo"></section>
+        <section id="vista-docentes" class="modulo"></section>
+        <section id="vista-asignaturas" class="modulo"></section>
+        <section id="vista-periodos" class="modulo"></section>
+        <section id="vista-aulas" class="modulo"></section>
+        <section id="vista-secciones" class="modulo"></section>
+        <section id="vista-matriculas" class="modulo"></section>
+        <section id="vista-calificaciones" class="modulo"></section>
+        <section id="vista-usuarios" class="modulo"></section>
+      </main>
+    </div>
+  </section>
+
+  <div id="modal" class="modal oculto" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+    <div class="modal-caja">
+      <div class="modal-cabecera">
+        <div>
+          <p class="eyebrow" id="modal-eyebrow">DETALLE</p>
+          <h2 id="modal-titulo">Información</h2>
+        </div>
+        <button id="modal-cerrar" class="boton boton-cerrar">×</button>
+      </div>
+      <div id="modal-contenido" class="modal-contenido"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/app.js?v=5"></script>
+</body>
+</html>
