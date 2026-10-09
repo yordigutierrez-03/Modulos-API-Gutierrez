@@ -8,6 +8,7 @@ const state = {
   vista: "inicio",
   datos: {},
   cargando: new Set(),
+  catalogoPeticiones: {},
 };
 
 const METADATA = {
@@ -341,28 +342,51 @@ async function cargarModulo(key) {
   try {
     const list = await api(`/${config.endpoint}${query}`);
     state.datos[key] = list;
-    await cargarSelects(key);
     renderTable(key, list);
   } catch (error) { notify(error.message, "error"); }
 }
 
 async function cargarSelects(key) {
   const fields = CONFIG[key].form || [];
-  for (const [, name, , , options] of fields) {
+  for (const [name, , , , options] of fields) {
     if (!options?.source) continue;
-    let sourceData = state.datos[options.source];
-    if (!sourceData) {
-      const endpoint = options.source === "asignaturas" ? "asignaturas" : options.source;
-      try { sourceData = await api(`/${endpoint}`); state.datos[options.source] = sourceData; } catch { sourceData = []; }
-    }
     const select = $(`#crud-form-${key} [name="${name}"]`);
     if (!select) continue;
-    let empty = options.empty ? `<option value="">${options.empty}</option>` : `<option value="">Seleccione...</option>`;
-    if (options.source === "carreras") select.innerHTML = empty + sourceData.map(x => `<option value="${x.id}">${escapeHtml(x.codigo)} — ${escapeHtml(x.nombre)}</option>`).join("");
-    else if (options.source === "docentes") select.innerHTML = empty + sourceData.map(x => `<option value="${x.id}">${escapeHtml(x.numero_empleado)} — ${escapeHtml(x.nombres)} ${escapeHtml(x.apellidos)}</option>`).join("");
-    else if (options.source === "asignaturas") select.innerHTML = empty + sourceData.map(x => `<option value="${x.id}">${escapeHtml(x.codigo)} — ${escapeHtml(x.nombre)}</option>`).join("");
-    else if (options.source === "periodos") select.innerHTML = empty + sourceData.map(x => `<option value="${x.id}">${escapeHtml(x.nombre)}</option>`).join("");
-    else if (options.source === "aulas") select.innerHTML = empty + sourceData.map(x => `<option value="${x.id}">${escapeHtml(x.codigo)} — ${escapeHtml(x.edificio)}</option>`).join("");
+
+    // Mostrar un estado temporal y consultar la API si el catálogo aún no está en memoria.
+    const previousValue = select.value;
+    select.innerHTML = '<option value="">Cargando...</option>';
+    let sourceData = state.datos[options.source];
+    try {
+      if (!Array.isArray(sourceData)) {
+        if (!state.catalogoPeticiones[options.source]) {
+          state.catalogoPeticiones[options.source] = api(`/${options.source}`).finally(() => {
+            delete state.catalogoPeticiones[options.source];
+          });
+        }
+        sourceData = await state.catalogoPeticiones[options.source];
+        if (!Array.isArray(sourceData)) throw new Error(`La respuesta de ${options.source} no es una lista válida.`);
+        state.datos[options.source] = sourceData;
+      }
+      const empty = options.empty ? `<option value="">${options.empty}</option>` : '<option value="">Seleccione...</option>';
+      let choices = '';
+      if (options.source === "carreras") choices = sourceData.filter(x => x.activo !== false && x.activo !== 0).map(x => `<option value="${x.id}">${escapeHtml(x.codigo)} — ${escapeHtml(x.nombre)}</option>`).join("");
+      else if (options.source === "docentes") choices = sourceData.map(x => `<option value="${x.id}">${escapeHtml(x.numero_empleado)} — ${escapeHtml(x.nombres)} ${escapeHtml(x.apellidos)}</option>`).join("");
+      else if (options.source === "asignaturas") choices = sourceData.map(x => `<option value="${x.id}">${escapeHtml(x.codigo)} — ${escapeHtml(x.nombre)}</option>`).join("");
+      else if (options.source === "periodos") choices = sourceData.map(x => `<option value="${x.id}">${escapeHtml(x.nombre)}</option>`).join("");
+      else if (options.source === "aulas") choices = sourceData.map(x => `<option value="${x.id}">${escapeHtml(x.codigo)} — ${escapeHtml(x.edificio)}</option>`).join("");
+      select.innerHTML = empty + choices;
+      if (!choices) select.innerHTML = `<option value="">${options.source === "carreras" ? "No hay carreras activas registradas" : "No hay opciones disponibles"}</option>`;
+      if (previousValue && [...select.options].some(option => option.value === previousValue)) select.value = previousValue;
+    } catch (error) {
+      select.innerHTML = `<option value="">No se pudieron cargar las opciones</option>`;
+      console.error(`Error cargando el catálogo ${options.source}:`, error);
+      const message = $(`#form-message-${key}`);
+      if (message) {
+        message.textContent = `No se pudo cargar ${options.source}. Comprueba la conexión con la API y vuelve a intentarlo. (${error.message})`;
+        message.className = "mensaje error-text";
+      }
+    }
   }
 }
 
@@ -411,10 +435,14 @@ function actionsSection(row) { return `<button class="boton-mini" data-report="s
 function abrirNuevo(key) {
   const form = $(`#crud-form-${key}`);
   form.reset();
+  const idField = form.elements.namedItem("id");
+  if (idField) idField.value = "";
   $("#form-titulo-" + key).textContent = `Nuevo ${singular(key)}`;
   $("#form-message-" + key).textContent = "";
   $("#form-" + key).classList.remove("oculto");
-  cargarSelects(key);
+  void cargarSelects(key);
+  const firstField = form.querySelector('input:not([type="hidden"]), select, textarea');
+  firstField?.focus({ preventScroll: true });
 }
 
 function abrirEdicion(key, id) {
